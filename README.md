@@ -1,12 +1,11 @@
 # Tools for solving Logic Programs with Ordered Disjunctions (LPOD)
 
 ## metalpod
-`metalpod` contains logic programs derived from
-[metasp](http://potassco.sourceforge.net/labs.html#metasp) to solve Logic
-Programs with Ordered Disjunctions (LPOD). It uses meta-programming and a
-saturation based approach.
+`metalpod` is a meta-programming and saturation based approach to solve
+Logic Programs with Ordered Disjunctions. It is based on
+[`metasp`](http://potassco.sourceforge.net/labs.html#metasp).
 
 ## traod aka TRAnslate Ordered Disjunctions
-`traod` contains a parser for LPODs and translates them to instances which can
-be handled by `metalpod` or
+`traod` is a parser for Logic Programs with Ordered Disjunctions and translates
+them into logic programs, which can be handled by `metalpod` or
 [`asprin`](http://potassco.sourceforge.net/labs.html#asprin).
