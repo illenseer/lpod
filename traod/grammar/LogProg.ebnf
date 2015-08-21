@@ -43,6 +43,7 @@ head
       disjunction:(classical_literal {OR classical_literal}+)
     | ordered_disjunction:(classical_literal {OOR classical_literal}+)
     | choice:choice
+    | choice:aggregate
     | atom:classical_literal
     ;
 
@@ -90,13 +91,17 @@ aggregate_elements
 
 aggregate_element
     =
-    [basic_terms] [COLON [naf_literals]]
+    [basic_terms] [COLON [naf_literals [COLON [naf_literals]]]]
     ;
 
 
 aggregate_function
     =
-    AGGREGATE_COUNT | AGGREGATE_MAX | AGGREGATE_MIN | AGGREGATE_SUM
+      AGGREGATE_COUNT
+    | AGGREGATE_MAX
+    | AGGREGATE_MIN
+    | AGGREGATE_SUMPLUS
+    | AGGREGATE_SUM
     ;
 
 
@@ -265,7 +270,7 @@ OOR
 
 NAF
     =
-    'not'
+    'not '
     ;
 
 
@@ -398,6 +403,12 @@ AGGREGATE_MAX
 AGGREGATE_MIN
     =
     '#min'
+    ;
+
+
+AGGREGATE_SUMPLUS
+    =
+    '#sum+'
     ;
 
 

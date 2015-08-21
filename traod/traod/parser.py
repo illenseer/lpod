@@ -132,6 +132,9 @@ class LogProgParser(Parser):
                 self._choice_()
                 self.ast['choice'] = self.last_node
             with self._option():
+                self._aggregate_()
+                self.ast['choice'] = self.last_node
+            with self._option():
                 self._classical_literal_()
                 self.ast['atom'] = self.last_node
             self._error('no available options')
@@ -225,6 +228,10 @@ class LogProgParser(Parser):
             self._COLON_()
             with self._optional():
                 self._naf_literals_()
+                with self._optional():
+                    self._COLON_()
+                    with self._optional():
+                        self._naf_literals_()
 
     @graken()
     def _aggregate_function_(self):
@@ -235,6 +242,8 @@ class LogProgParser(Parser):
                 self._AGGREGATE_MAX_()
             with self._option():
                 self._AGGREGATE_MIN_()
+            with self._option():
+                self._AGGREGATE_SUMPLUS_()
             with self._option():
                 self._AGGREGATE_SUM_()
             self._error('no available options')
@@ -548,6 +557,10 @@ class LogProgParser(Parser):
     @graken()
     def _AGGREGATE_MIN_(self):
         self._token('#min')
+
+    @graken()
+    def _AGGREGATE_SUMPLUS_(self):
+        self._token('#sum+')
 
     @graken()
     def _AGGREGATE_SUM_(self):
