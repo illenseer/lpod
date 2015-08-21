@@ -22,21 +22,24 @@ CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
     '-b',
     type=click.Choice(['metalpod', 'asprin']),
     default='metalpod',
-    help='Backend to solve LPOD instance.'
+    help='Backend to solve LPOD instance. Default: metalpod'
 )
 @click.option(
     '--strategy',
     '-s',
     type=click.Choice(['pareto', 'incl', 'card']),
     default='pareto',
-    help='Strategy for LPOD instance.'
+    help='Strategy for LPOD instance. Default: pareto'
 )
 @click.option(
     '--generator',
     '-g',
     type=click.Choice(['split', 'cabalar']),
     default='split',
-    help='Generator for LPOD instance: Split programs or Cabalar translation'
+    help=(
+        'Generator for LPOD instance: Split programs or Cabalar translation. '
+        'Default: split'
+    )
 )
 def main(filename, backend, strategy, generator):
     text = filename.read()
