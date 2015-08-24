@@ -100,10 +100,14 @@ class LogProgParser(Parser):
                 self._weight_at_level_()
                 self.ast['weight_at_level'] = self.last_node
                 self._SQUARE_CLOSE_()
+            with self._option():
+                self._optimize_()
+                self.ast['optimize'] = self.last_node
+                self._DOT_()
             self._error('no available options')
 
         self.ast._define(
-            ['body', 'head', 'weight_at_level'],
+            ['body', 'head', 'weight_at_level', 'optimize'],
             []
         )
 
@@ -223,7 +227,7 @@ class LogProgParser(Parser):
     @graken()
     def _aggregate_element_(self):
         with self._optional():
-            self._basic_terms_()
+            self._terms_()
         with self._optional():
             self._COLON_()
             with self._optional():
@@ -246,6 +250,38 @@ class LogProgParser(Parser):
                 self._AGGREGATE_SUMPLUS_()
             with self._option():
                 self._AGGREGATE_SUM_()
+            self._error('no available options')
+
+    @graken()
+    def _optimize_(self):
+        self._optimize_function_()
+        self._CURLY_OPEN_()
+        with self._optional():
+            self._optimize_elements_()
+        self._CURLY_CLOSE_()
+
+    @graken()
+    def _optimize_elements_(self):
+        with self._optional():
+            self._optimize_elements_()
+            self._SEMICOLON_()
+        self._optimize_element_()
+
+    @graken()
+    def _optimize_element_(self):
+        self._weight_at_level_()
+        with self._optional():
+            self._COLON_()
+            with self._optional():
+                self._naf_literals_()
+
+    @graken()
+    def _optimize_function_(self):
+        with self._choice():
+            with self._option():
+                self._MAXIMIZE_()
+            with self._option():
+                self._MINIMIZE_()
             self._error('no available options')
 
     @graken()
@@ -346,44 +382,6 @@ class LogProgParser(Parser):
                 self._term_()
                 self._arithop_()
                 self._term_()
-            self._error('no available options')
-
-    @graken()
-    def _basic_terms_(self):
-        with self._optional():
-            self._basic_terms_()
-            self._COMMA_()
-        self._basic_term_()
-
-    @graken()
-    def _basic_term_(self):
-        with self._choice():
-            with self._option():
-                self._ground_term_()
-            with self._option():
-                self._variable_term_()
-            self._error('no available options')
-
-    @graken()
-    def _ground_term_(self):
-        with self._choice():
-            with self._option():
-                self._SYMBOLIC_CONSTANT_()
-            with self._option():
-                self._STRING_()
-            with self._option():
-                with self._optional():
-                    self._MINUS_()
-                self._NUMBER_()
-            self._error('no available options')
-
-    @graken()
-    def _variable_term_(self):
-        with self._choice():
-            with self._option():
-                self._VARIABLE_()
-            with self._option():
-                self._ANONYMOUS_VARIABLE_()
             self._error('no available options')
 
     @graken()
@@ -565,6 +563,24 @@ class LogProgParser(Parser):
     @graken()
     def _AGGREGATE_SUM_(self):
         self._token('#sum')
+
+    @graken()
+    def _MINIMIZE_(self):
+        with self._choice():
+            with self._option():
+                self._token('#minimize')
+            with self._option():
+                self._token('#minimise')
+            self._error('expecting one of: #minimise #minimize')
+
+    @graken()
+    def _MAXIMIZE_(self):
+        with self._choice():
+            with self._option():
+                self._token('#maximize')
+            with self._option():
+                self._token('#maximise')
+            self._error('expecting one of: #maximise #maximize')
 
     @graken()
     def _regex_(self):

@@ -29,7 +29,9 @@ class LogProgSemantics(object):
         """
         Do not allow Weight Constraints.
         """
-        raise SemanticError('Weight Constraints are not allowed.')
+        raise SemanticError(
+            'Weight constraints or optimize statements are not allowed.'
+        )
 
     def body(self, ast):
         """

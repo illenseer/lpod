@@ -35,6 +35,8 @@ statement
         SQUARE_OPEN
         weight_at_level:weight_at_level
         SQUARE_CLOSE
+    |
+        optimize:optimize DOT
     ;
 
 
@@ -91,7 +93,7 @@ aggregate_elements
 
 aggregate_element
     =
-    [basic_terms] [COLON [naf_literals [COLON [naf_literals]]]]
+    [terms] [COLON [naf_literals [COLON [naf_literals]]]]
     ;
 
 
@@ -102,6 +104,33 @@ aggregate_function
     | AGGREGATE_MIN
     | AGGREGATE_SUMPLUS
     | AGGREGATE_SUM
+    ;
+
+
+optimize
+    =
+    optimize_function
+    CURLY_OPEN
+    [optimize_elements]
+    CURLY_CLOSE
+    ;
+
+
+optimize_elements
+    =
+    [optimize_elements SEMICOLON] optimize_element
+    ;
+
+
+optimize_element
+    =
+    weight_at_level [COLON [naf_literals]]
+    ;
+
+
+optimize_function
+    =
+    MAXIMIZE | MINIMIZE
     ;
 
 
@@ -157,30 +186,6 @@ term
     | PAREN_OPEN term PAREN_CLOSE
     | MINUS term
     | term arithop term
-    ;
-
-
-basic_terms
-    =
-    [basic_terms COMMA] basic_term
-    ;
-
-
-basic_term
-    =
-    ground_term | variable_term
-    ;
-
-
-ground_term
-    =
-    SYMBOLIC_CONSTANT | STRING | [MINUS] NUMBER
-    ;
-
-
-variable_term
-    =
-    VARIABLE | ANONYMOUS_VARIABLE
     ;
 
 
@@ -415,6 +420,18 @@ AGGREGATE_SUMPLUS
 AGGREGATE_SUM
     =
     '#sum'
+    ;
+
+
+MINIMIZE
+    =
+    '#minimize' | '#minimise'
+    ;
+
+
+MAXIMIZE
+    =
+    '#maximize' | '#maximise'
     ;
 
 
