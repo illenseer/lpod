@@ -30,3 +30,12 @@ Install `traod`:
 `-g, --generator [split|cabalar]`
   Generator for LPOD instance: Split programs or Cabalar translation.
   Default: `split`
+
+## LPOD Syntax
+The operator '×' for ordered disjunction is represented by ';;'.
+
+An example for the notation of a LPOD:
+
+    a ;; b :- c
+    d ;; e ;; f.
+    c.
