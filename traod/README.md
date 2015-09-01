@@ -36,6 +36,6 @@ The operator '×' for ordered disjunction is represented by ';;'.
 
 An example for the notation of a LPOD:
 
-    a ;; b :- c
+    a ;; b :- c.
     d ;; e ;; f.
     c.

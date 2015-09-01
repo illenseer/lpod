@@ -30,7 +30,7 @@ class Test(object):
         cmd = (
             'traod -b metalpod -g cabalar -s {st} {fi} | '
             'clingo --pre | '
-            'reify | '
+            'reify -c | '
             'clingo -Wno-atom-undefined meta.lp metaD.lp metaO.lp - 0 | '
             'cat -'
         ).format(st=self.strategy, fi=self.filename)

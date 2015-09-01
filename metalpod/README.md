@@ -21,5 +21,5 @@ First generate an instance with `traod`, then create an meta program of it with
 
     traod --backend metalpod --generator [split|cabalar] --strategy [pareto|incl|card] test.lp | \
     clingo --pre | \
-    reify | \
+    reify -c | \
     clingo -Wno-atom-undefined meta.lp metaD.lp metaO.lp - 0
