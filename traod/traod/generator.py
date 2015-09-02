@@ -36,6 +36,16 @@ def generate_split(ast, backend, strategy):
                 ods = ''.join(statement.head.ordered_disjunction).split(';;')
                 choice = ''
                 ld_el = ''
+
+                if backend == 'asprin':
+                    ar = 'od_body({nr}){body}.'.format(
+                        nr=od_count,
+                        body=':-' + body if statement.body else ''
+                    )
+                    additional_rules.append(ar)
+                    ar = 'od_atoms({nr},1):-not od_body({nr}).'.format(nr=od_count)
+                    additional_rules.append(ar)
+
                 for od in ods:
                     deg_count += 1
                     if deg_count > max_deg_count:
@@ -54,6 +64,13 @@ def generate_split(ast, backend, strategy):
                         body=',' + body + '.' if statement.body else '.'
                     )
                     additional_rules.append(ar)
+                    arc = ':-not {ch},{od}{ld}{body}'.format(
+                        ch=choice_el,
+                        od=od,
+                        ld=ld_el,
+                        body=',' + body + '.' if statement.body else '.'
+                    )
+                    additional_rules.append(arc)
                     ld_el += ',not {}'.format(od)
                 head = '{{{choice}}}=1'.format(choice=choice)
             elif statement.head.atom:
