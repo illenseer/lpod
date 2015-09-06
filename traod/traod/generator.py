@@ -35,6 +35,7 @@ def generate_split(ast, backend, strategy):
                 deg_count = 0
                 ods = ''.join(statement.head.ordered_disjunction).split(';;')
                 choice = ''
+                sat_choice = ''
                 ld_el = ''
 
                 if backend == 'asprin':
@@ -56,7 +57,9 @@ def generate_split(ast, backend, strategy):
                     )
                     if deg_count != 1:
                         choice += ';'
+                        sat_choice += ','
                     choice += choice_el
+                    sat_choice += 'not {ch}'.format(ch=choice_el)
                     ar = '{od}:-{ch}{ld}{body}'.format(
                         od=od,
                         ch=choice_el,
@@ -73,6 +76,11 @@ def generate_split(ast, backend, strategy):
                     additional_rules.append(arc)
                     ld_el += ',not {}'.format(od)
                 head = '{{{choice}}}=1'.format(choice=choice)
+                satisfied = 'satisfied({nr},1):-{sc}.'.format(
+                    nr=od_count,
+                    sc=sat_choice
+                )
+                additional_rules.append(satisfied)
             elif statement.head.atom:
                 head = ''.join(statement.head.atom)
             elif statement.head.choice:
@@ -90,9 +98,11 @@ def generate_split(ast, backend, strategy):
         for rule in additional_rules:
             stmts.append(rule)
 
+    generic_satisfied = 'satisfied(R,D):-od_atoms(R,D).'
+    stmts.append(generic_satisfied)
+
     if backend == 'metalpod':
         stmts.append('optimize({}).'.format(strategy))
-        stmts.append('generator(split).')
     elif backend == 'asprin':
         asprin_stmts = generate_asprin_preference_spec(
             strategy,
@@ -133,14 +143,14 @@ def generate_cabalar(ast, backend, strategy):
                     body=':-' + body if statement.body else ''
                 )
                 additional_rules.append(ar)
-                ar = 'od_atoms({nr},1):-not od_body({nr}).'.format(nr=od_count)
+                ar = 'satisfied({nr},1):-not od_body({nr}).'.format(nr=od_count)
                 additional_rules.append(ar)
 
                 for od in ods:
                     deg_count += 1
                     if deg_count > max_deg_count:
                         max_deg_count = deg_count
-                    od_atom = 'od_atoms({r},{d})'.format(
+                    od_atom = 'satisfied({r},{d})'.format(
                         r=od_count,
                         d=deg_count
                     )
@@ -182,7 +192,6 @@ def generate_cabalar(ast, backend, strategy):
 
     if backend == 'metalpod':
         stmts.append('optimize({}).'.format(strategy))
-        stmts.append('generator(cabalar).')
     elif backend == 'asprin':
         asprin_stmts = generate_asprin_preference_spec(
             strategy,
@@ -206,7 +215,7 @@ def generate_asprin_preference_spec(strategy, od_count, deg_count):
 
     pareto_per_rule_tmpl = (
         '#preference(od{nr},less(weight))'
-        '{{D,{nr}::od_atoms({nr},D):deg(D)}}.'
+        '{{D,{nr}::satisfied({nr},D):deg(D)}}.'
     )
     pareto_combine_tmpl = (
         '#preference(all,pareto){{{rules}}}.\n'
@@ -214,7 +223,7 @@ def generate_asprin_preference_spec(strategy, od_count, deg_count):
     )
     incl_per_deg_tmpl = (
         '#preference(od{nr},superset)'
-        '{{od_atoms(R,{nr}):rule(R)}}.'
+        '{{satisfied(R,{nr}):rule(R)}}.'
     )
     incl_card_combine_tmpl = (
         '#preference(all,lexico){{{rules}}}.\n'
@@ -222,7 +231,7 @@ def generate_asprin_preference_spec(strategy, od_count, deg_count):
     )
     card_per_deg_tmpl = (
         '#preference(od{nr},more(cardinality))'
-        '{{od_atoms(R,{nr}):rule(R)}}.'
+        '{{satisfied(R,{nr}):rule(R)}}.'
     )
 
     if strategy == 'pareto':

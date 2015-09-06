@@ -21,18 +21,15 @@ cxopt(incl).
 cxopt(card).
 
 % all degrees
-deg(D) :- show(_,od_atoms(_,D)).
+deg(D) :- show(_,satisfied(_,D)).
 % all rules
-rule(R) :- show(_,od_atoms(R,_)).
+rule(R) :- show(_,satisfied(R,_)).
 
 % set strategy
 strategy(O) :- show(_,optimize(O)), not optimize(_).
 strategy(O) :- optimize(O).
 % default strategy pareto
 strategy(pareto) :- not strategy(O) : cxopt(O).
-
-% set generator
-generator(G) :- show(_,generator(G)).
 
 % verify dominance
 bot :- equal(_).
@@ -42,104 +39,38 @@ bot :- worse(_).
 :- not bot.
 
 
-% Degrees for all rules for generator split
-degC(R,1) :- strategy(pareto),
-             generator(split),
-             choice(I,B),
-             atoms(I,A),
-             not body(B),
-             show(A,od_atoms(R,1)).
-
-degC(R,D) :- strategy(pareto),
-             generator(split),
-             choice(I,B),
-             atoms(I,A),
-             hold(A),
-             show(A,od_atoms(R,D)).
-
-degO(R,1) :- strategy(pareto),
-             generator(split),
-             choice(I,B),
-             atoms(I,A),
-             fail(lits(B)),
-             show(A,od_atoms(R,1)).
-
-degO(R,D) :- strategy(pareto),
-             generator(split),
-             choice(I,B),
-             atoms(I,A),
-             true(lits(B)),
-             true(atom(A)),
-             show(A,od_atoms(R,D)).
-
-% Degrees for all rules for generator cabalar
-degC(R,D) :- strategy(pareto),
-             generator(cabalar),
-             normal(A,B),
-             hold(A),
-             show(A,od_atoms(R,D)).
-
-degO(R,D) :- strategy(pareto),
-             generator(cabalar),
-             normal(A,B),
-             true(lits(B)),
-             true(atom(A)),
-             show(A,od_atoms(R,D)).
-
-% Inverse degrees for all rules for generator split
-invDegC(R,D) :- strategy(incl;card),
-                generator(split),
-                atoms(I,A),
-                choice(I,B),
-                not body(B),
-                show(A,od_atoms(R,D)),
-                deg(D), D>1.
-
-invDegC(R,D) :- strategy(incl;card),
-                generator(split),
-                atoms(I,A),
-                choice(I,B),
-                body(B),
-                show(A,od_atoms(R,D)),
-                not hold(A).
-
-invDegO(R,D) :- strategy(incl;card),
-                generator(split),
-                atoms(I,A),
-                choice(I,B),
-                fail(lits(B)),
-                show(A,od_atoms(R,D)),
-                D>1.
-
-invDegO(R,D) :- strategy(incl;card),
-                generator(split),
-                atoms(I,A),
-                choice(I,B),
-                true(lits(B)),
-                show(A,od_atoms(R,D)),
-                fail(atom(A)).
-
-% Inverse degrees for all rules for generator cabalar
-invDegC(R,D) :- strategy(incl;card),
-                generator(cabalar),
+% Degrees for all rules
+degCand(R,D) :- strategy(pareto),
                 normal(A,B),
-                not hold(A),
-                not body(B),
-                show(A,od_atoms(R,D)).
+                hold(A),
+                show(A,satisfied(R,D)).
 
-invDegO(R,D) :- strategy(incl;card),
-                generator(cabalar),
-                normal(A,B),
-                fail(atom(A)),
-                fail(lits(B)),
-                show(A,od_atoms(R,D)).
+degCounter(R,D) :- strategy(pareto),
+                   normal(A,B),
+                   true(lits(B)),
+                   true(atom(A)),
+                   show(A,satisfied(R,D)).
+
+
+% Inverse degrees for all rules
+invDegCand(R,D) :- strategy(incl;card),
+                   normal(A,B),
+                   not hold(A),
+                   not body(B),
+                   show(A,satisfied(R,D)).
+
+invDegCounter(R,D) :- strategy(incl;card),
+                      normal(A,B),
+                      fail(atom(A)),
+                      fail(lits(B)),
+                      show(A,satisfied(R,D)).
 
 
 %%%%%%%%%% Pareto-preferred
 
-worse(pareto) :- strategy(pareto), degC(R,D1), degO(R,D2), D1 < D2.
+worse(pareto) :- strategy(pareto), degCand(R,D1), degCounter(R,D2), D1 < D2.
 
-equal(pareto,R) :- strategy(pareto), degC(R,D), degO(R,D).
+equal(pareto,R) :- strategy(pareto), degCand(R,D), degCounter(R,D).
 equal(pareto) :- strategy(pareto), equal(pareto,R) : rule(R).
 
 
@@ -159,26 +90,27 @@ worse(incl) :- check(D1), worse(incl,D1).
 equal(incl) :- check(D1), equal(incl,D1), #false : chain(D1,D2).
 
 % rule with degree
-rd(R,D) :- strategy(incl), show(_,od_atoms(R,D)).
+rd(R,D) :- strategy(incl), show(_,satisfied(R,D)).
 
-ndiff(R,D) :- strategy(incl), rd(R,D), invDegO(R,D).
-ndiff(R,D) :- strategy(incl), rd(R,D), not invDegC(R,D).
+ndiff(R,D) :- strategy(incl), rd(R,D), invDegCounter(R,D).
+ndiff(R,D) :- strategy(incl), rd(R,D), not invDegCand(R,D).
 
 equal(incl,D) :- strategy(incl), deg(D), ndiff(R,D) : rd(R,D).
-worse(incl,D) :- strategy(incl), rd(R,D), invDegO(R,D), not invDegC(R,D).
+worse(incl,D) :- strategy(incl), rd(R,D),
+                 invDegCounter(R,D), not invDegCand(R,D).
 
 
 %%%%%%%%%% Cardinality-preferred
 
 count(D,0) :- strategy(card),
               deg(D),
-              #sum { -1,R1 : invDegC(R1,D), rule(R1) ;
-                      1,R2 : invDegO(R2,D), rule(R2) } >= 0.
+              #sum { -1,R1 : invDegCand(R1,D), rule(R1) ;
+                      1,R2 : invDegCounter(R2,D), rule(R2) } >= 0.
 
 count(D,1) :- strategy(card),
               deg(D),
-              #sum { -1,R1 : invDegC(R1,D), rule(R1) ;
-                      1,R2 : invDegO(R2,D), rule(R2) } >= 1.
+              #sum { -1,R1 : invDegCand(R1,D), rule(R1) ;
+                      1,R2 : invDegCounter(R2,D), rule(R2) } >= 1.
 
 worse(card) :- strategy(card),
                count(D1,1),
@@ -190,5 +122,5 @@ equal(card) :- strategy(card), count(D,0) : deg(D).
 % hide od_atoms(_,_), od_body(_), generator(_) and optimize(_)
 hide(A,od_atoms(R,D)) :- show(A,od_atoms(R,D)).
 hide(A,od_body(R)) :- show(A,od_body(R)).
+hide(A,satisfied(R,D)) :- show(A,satisfied(R,D)).
 hide(A,optimize(O)) :- show(A,optimize(O)).
-hide(A,generator(G)) :- show(A,generator(G)).
