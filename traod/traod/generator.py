@@ -85,6 +85,8 @@ def generate_split(ast, backend, strategy):
                 head = ''.join(statement.head.atom)
             elif statement.head.choice:
                 head = ''.join(statement.head.choice)
+            elif statement.head.aggregate:
+                head = ''.join(statement.head.aggregate)
         else:
             head=''
 
@@ -177,6 +179,8 @@ def generate_cabalar(ast, backend, strategy):
                 head = ''.join(statement.head.atom)
             elif statement.head.choice:
                 head = ''.join(statement.head.choice)
+            elif statement.head.aggregate:
+                head = ''.join(statement.head.aggregate)
         else:
             head=''
 

@@ -76,34 +76,34 @@ class LogProgParser(Parser):
     def _statement_(self):
         with self._choice():
             with self._option():
-                self._CONS_()
+                self._cons_()
                 with self._optional():
                     self._body_()
                     self.ast['body'] = self.last_node
-                self._DOT_()
+                self._dot_()
             with self._option():
                 self._head_()
                 self.ast['head'] = self.last_node
                 with self._optional():
-                    self._CONS_()
+                    self._cons_()
                     with self._optional():
                         self._body_()
                         self.ast['body'] = self.last_node
-                self._DOT_()
+                self._dot_()
             with self._option():
-                self._WCONS_()
+                self._wcons_()
                 with self._optional():
                     self._body_()
                     self.ast['body'] = self.last_node
-                self._DOT_()
-                self._SQUARE_OPEN_()
+                self._dot_()
+                self._square_open_()
                 self._weight_at_level_()
                 self.ast['weight_at_level'] = self.last_node
-                self._SQUARE_CLOSE_()
+                self._square_close_()
             with self._option():
                 self._optimize_()
                 self.ast['optimize'] = self.last_node
-                self._DOT_()
+                self._dot_()
             self._error('no available options')
 
         self.ast._define(
@@ -119,7 +119,7 @@ class LogProgParser(Parser):
                     self._classical_literal_()
 
                     def block1():
-                        self._OR_()
+                        self._or_()
                         self._classical_literal_()
                     self._positive_closure(block1)
                 self.ast['disjunction'] = self.last_node
@@ -128,7 +128,7 @@ class LogProgParser(Parser):
                     self._classical_literal_()
 
                     def block3():
-                        self._OOR_()
+                        self._oor_()
                         self._classical_literal_()
                     self._positive_closure(block3)
                 self.ast['ordered_disjunction'] = self.last_node
@@ -137,14 +137,14 @@ class LogProgParser(Parser):
                 self.ast['choice'] = self.last_node
             with self._option():
                 self._aggregate_()
-                self.ast['choice'] = self.last_node
+                self.ast['aggregate'] = self.last_node
             with self._option():
                 self._classical_literal_()
                 self.ast['atom'] = self.last_node
             self._error('no available options')
 
         self.ast._define(
-            ['disjunction', 'ordered_disjunction', 'choice', 'atom'],
+            ['disjunction', 'ordered_disjunction', 'choice', 'aggregate', 'atom'],
             []
         )
 
@@ -156,19 +156,19 @@ class LogProgParser(Parser):
                     self._naf_literal_()
                 with self._option():
                     with self._optional():
-                        self._NAF_()
+                        self._naf_()
                     self._aggregate_()
                 self._error('no available options')
 
         def block1():
-            self._COMMA_()
+            self._comma_()
             with self._group():
                 with self._choice():
                     with self._option():
                         self._naf_literal_()
                     with self._option():
                         with self._optional():
-                            self._NAF_()
+                            self._naf_()
                         self._aggregate_()
                     self._error('no available options')
         self._closure(block1)
@@ -179,27 +179,25 @@ class LogProgParser(Parser):
             self._term_()
             with self._optional():
                 self._binop_()
-        self._CURLY_OPEN_()
+        self._curly_open_()
         with self._optional():
-            self._choice_elements_()
-        self._CURLY_CLOSE_()
+            self._choice_element_()
+
+            def block0():
+                self._semicolon_()
+                self._choice_element_()
+            self._closure(block0)
+        self._curly_close_()
         with self._optional():
             with self._optional():
                 self._binop_()
             self._term_()
 
     @graken()
-    def _choice_elements_(self):
-        with self._optional():
-            self._choice_elements_()
-            self._SEMICOLON_()
-        self._choice_element_()
-
-    @graken()
     def _choice_element_(self):
         self._classical_literal_()
         with self._optional():
-            self._COLON_()
+            self._colon_()
             with self._optional():
                 self._naf_literals_()
 
@@ -207,33 +205,34 @@ class LogProgParser(Parser):
     def _aggregate_(self):
         with self._optional():
             self._term_()
-            self._binop_()
-        self._aggregate_function_()
-        self._CURLY_OPEN_()
+            with self._optional():
+                self._binop_()
         with self._optional():
-            self._aggregate_elements_()
-        self._CURLY_CLOSE_()
+            self._aggregate_function_()
+        self._curly_open_()
         with self._optional():
-            self._binop_()
-            self._term_()
+            self._aggregate_element_()
 
-    @graken()
-    def _aggregate_elements_(self):
+            def block0():
+                self._semicolon_()
+                self._aggregate_element_()
+            self._closure(block0)
+        self._curly_close_()
         with self._optional():
-            self._aggregate_elements_()
-            self._SEMICOLON_()
-        self._aggregate_element_()
+            with self._optional():
+                self._binop_()
+            self._term_()
 
     @graken()
     def _aggregate_element_(self):
         with self._optional():
             self._terms_()
         with self._optional():
-            self._COLON_()
+            self._colon_()
             with self._optional():
                 self._naf_literals_()
                 with self._optional():
-                    self._COLON_()
+                    self._colon_()
                     with self._optional():
                         self._naf_literals_()
 
@@ -241,37 +240,35 @@ class LogProgParser(Parser):
     def _aggregate_function_(self):
         with self._choice():
             with self._option():
-                self._AGGREGATE_COUNT_()
+                self._aggregate_count_()
             with self._option():
-                self._AGGREGATE_MAX_()
+                self._aggregate_max_()
             with self._option():
-                self._AGGREGATE_MIN_()
+                self._aggregate_min_()
             with self._option():
-                self._AGGREGATE_SUMPLUS_()
+                self._aggregate_sumplus_()
             with self._option():
-                self._AGGREGATE_SUM_()
+                self._aggregate_sum_()
             self._error('no available options')
 
     @graken()
     def _optimize_(self):
         self._optimize_function_()
-        self._CURLY_OPEN_()
+        self._curly_open_()
         with self._optional():
-            self._optimize_elements_()
-        self._CURLY_CLOSE_()
+            self._optimize_element_()
 
-    @graken()
-    def _optimize_elements_(self):
-        with self._optional():
-            self._optimize_elements_()
-            self._SEMICOLON_()
-        self._optimize_element_()
+            def block0():
+                self._semicolon_()
+                self._optimize_element_()
+            self._closure(block0)
+        self._curly_close_()
 
     @graken()
     def _optimize_element_(self):
         self._weight_at_level_()
         with self._optional():
-            self._COLON_()
+            self._colon_()
             with self._optional():
                 self._naf_literals_()
 
@@ -279,34 +276,36 @@ class LogProgParser(Parser):
     def _optimize_function_(self):
         with self._choice():
             with self._option():
-                self._MAXIMIZE_()
+                self._maximize_()
             with self._option():
-                self._MINIMIZE_()
+                self._minimize_()
             self._error('no available options')
 
     @graken()
     def _weight_at_level_(self):
         self._term_()
         with self._optional():
-            self._AT_()
+            self._at_()
             self._term_()
         with self._optional():
-            self._COMMA_()
+            self._comma_()
             self._terms_()
 
     @graken()
     def _naf_literals_(self):
-        with self._optional():
-            self._naf_literals_()
-            self._COMMA_()
         self._naf_literal_()
+
+        def block0():
+            self._comma_()
+            self._naf_literal_()
+        self._closure(block0)
 
     @graken()
     def _naf_literal_(self):
         with self._choice():
             with self._option():
                 with self._optional():
-                    self._NAF_()
+                    self._naf_()
                 self._classical_literal_()
             with self._option():
                 self._builtin_atom_()
@@ -315,13 +314,13 @@ class LogProgParser(Parser):
     @graken()
     def _classical_literal_(self):
         with self._optional():
-            self._MINUS_()
-        self._ID_()
+            self._minus_()
+        self._id_()
         with self._optional():
-            self._PAREN_OPEN_()
+            self._paren_open_()
             with self._optional():
                 self._terms_()
-            self._PAREN_CLOSE_()
+            self._paren_close_()
 
     @graken()
     def _builtin_atom_(self):
@@ -333,50 +332,52 @@ class LogProgParser(Parser):
     def _binop_(self):
         with self._choice():
             with self._option():
-                self._EQUAL_()
+                self._equal_()
             with self._option():
-                self._UNEQUAL_()
+                self._unequal_()
             with self._option():
-                self._LESS_OR_EQ_()
+                self._less_or_eq_()
             with self._option():
-                self._GREATER_OR_EQ_()
+                self._greater_or_eq_()
             with self._option():
-                self._LESS_()
+                self._less_()
             with self._option():
-                self._GREATER_()
+                self._greater_()
             self._error('no available options')
 
     @graken()
     def _terms_(self):
-        with self._optional():
-            self._terms_()
-            self._COMMA_()
         self._term_()
+
+        def block0():
+            self._comma_()
+            self._term_()
+        self._closure(block0)
 
     @graken()
     def _term_(self):
         with self._choice():
             with self._option():
-                self._ID_()
+                self._id_()
                 with self._optional():
-                    self._PAREN_OPEN_()
+                    self._paren_open_()
                     with self._optional():
                         self._terms_()
-                    self._PAREN_CLOSE_()
+                    self._paren_close_()
             with self._option():
-                self._NUMBER_()
+                self._number_()
             with self._option():
-                self._STRING_()
+                self._string_()
             with self._option():
-                self._VARIABLE_()
+                self._variable_()
             with self._option():
-                self._ANONYMOUS_VARIABLE_()
+                self._anonymous_variable_()
             with self._option():
-                self._PAREN_OPEN_()
+                self._paren_open_()
                 self._term_()
-                self._PAREN_CLOSE_()
+                self._paren_close_()
             with self._option():
-                self._MINUS_()
+                self._minus_()
                 self._term_()
             with self._option():
                 self._term_()
@@ -388,61 +389,61 @@ class LogProgParser(Parser):
     def _arithop_(self):
         with self._choice():
             with self._option():
-                self._PLUS_()
+                self._plus_()
             with self._option():
-                self._MINUS_()
+                self._minus_()
             with self._option():
-                self._TIMES_()
+                self._times_()
             with self._option():
-                self._DIV_()
+                self._div_()
             self._error('no available options')
 
     @graken()
-    def _ID_(self):
+    def _id_(self):
         self._pattern(r'[a-z_][A-Za-z0-9_]*')
 
     @graken()
-    def _VARIABLE_(self):
+    def _variable_(self):
         self._pattern(r'[A-Z][A-Za-z0-9_]*')
 
     @graken()
-    def _SYMBOLIC_CONSTANT_(self):
+    def _symbolic_constant_(self):
         self._pattern(r'[a-z][A-Za-z0-9_]*')
 
     @graken()
-    def _STRING_(self):
+    def _string_(self):
         self._pattern(r'"(?:\\.|[^|*\\()])+"')
 
     @graken()
-    def _NUMBER_(self):
+    def _number_(self):
         self._pattern(r'(0|[1-9][0-9]*)')
 
     @graken()
-    def _ANONYMOUS_VARIABLE_(self):
+    def _anonymous_variable_(self):
         self._token('_')
 
     @graken()
-    def _DOT_(self):
+    def _dot_(self):
         self._token('.')
 
     @graken()
-    def _COMMA_(self):
+    def _comma_(self):
         self._token(',')
 
     @graken()
-    def _QUERY_MARK_(self):
+    def _query_mark_(self):
         self._token('?')
 
     @graken()
-    def _COLON_(self):
+    def _colon_(self):
         self._token(':')
 
     @graken()
-    def _SEMICOLON_(self):
+    def _semicolon_(self):
         self._token(';')
 
     @graken()
-    def _OR_(self):
+    def _or_(self):
         with self._choice():
             with self._option():
                 self._token('|')
@@ -451,7 +452,7 @@ class LogProgParser(Parser):
             self._error('expecting one of: ; |')
 
     @graken()
-    def _OOR_(self):
+    def _oor_(self):
         with self._choice():
             with self._option():
                 self._token(';;')
@@ -460,67 +461,67 @@ class LogProgParser(Parser):
             self._error('expecting one of: ;; ||')
 
     @graken()
-    def _NAF_(self):
+    def _naf_(self):
         self._token('not ')
 
     @graken()
-    def _CONS_(self):
+    def _cons_(self):
         self._token(':-')
 
     @graken()
-    def _WCONS_(self):
+    def _wcons_(self):
         self._token(':~')
 
     @graken()
-    def _PLUS_(self):
+    def _plus_(self):
         self._token('+')
 
     @graken()
-    def _MINUS_(self):
+    def _minus_(self):
         self._token('-')
 
     @graken()
-    def _TIMES_(self):
+    def _times_(self):
         self._token('*')
 
     @graken()
-    def _DIV_(self):
+    def _div_(self):
         self._token('/')
 
     @graken()
-    def _AT_(self):
+    def _at_(self):
         self._token('@')
 
     @graken()
-    def _PAREN_OPEN_(self):
+    def _paren_open_(self):
         self._token('(')
 
     @graken()
-    def _PAREN_CLOSE_(self):
+    def _paren_close_(self):
         self._token(')')
 
     @graken()
-    def _SQUARE_OPEN_(self):
+    def _square_open_(self):
         self._token('[')
 
     @graken()
-    def _SQUARE_CLOSE_(self):
+    def _square_close_(self):
         self._token(']')
 
     @graken()
-    def _CURLY_OPEN_(self):
+    def _curly_open_(self):
         self._token('{')
 
     @graken()
-    def _CURLY_CLOSE_(self):
+    def _curly_close_(self):
         self._token('}')
 
     @graken()
-    def _EQUAL_(self):
+    def _equal_(self):
         self._token('=')
 
     @graken()
-    def _UNEQUAL_(self):
+    def _unequal_(self):
         with self._choice():
             with self._option():
                 self._token('<>')
@@ -529,43 +530,43 @@ class LogProgParser(Parser):
             self._error('expecting one of: != <>')
 
     @graken()
-    def _LESS_(self):
+    def _less_(self):
         self._token('<')
 
     @graken()
-    def _GREATER_(self):
+    def _greater_(self):
         self._token('>')
 
     @graken()
-    def _LESS_OR_EQ_(self):
+    def _less_or_eq_(self):
         self._token('<=')
 
     @graken()
-    def _GREATER_OR_EQ_(self):
+    def _greater_or_eq_(self):
         self._token('>=')
 
     @graken()
-    def _AGGREGATE_COUNT_(self):
+    def _aggregate_count_(self):
         self._token('#count')
 
     @graken()
-    def _AGGREGATE_MAX_(self):
+    def _aggregate_max_(self):
         self._token('#max')
 
     @graken()
-    def _AGGREGATE_MIN_(self):
+    def _aggregate_min_(self):
         self._token('#min')
 
     @graken()
-    def _AGGREGATE_SUMPLUS_(self):
+    def _aggregate_sumplus_(self):
         self._token('#sum+')
 
     @graken()
-    def _AGGREGATE_SUM_(self):
+    def _aggregate_sum_(self):
         self._token('#sum')
 
     @graken()
-    def _MINIMIZE_(self):
+    def _minimize_(self):
         with self._choice():
             with self._option():
                 self._token('#minimize')
@@ -574,7 +575,7 @@ class LogProgParser(Parser):
             self._error('expecting one of: #minimise #minimize')
 
     @graken()
-    def _MAXIMIZE_(self):
+    def _maximize_(self):
         with self._choice():
             with self._option():
                 self._token('#maximize')

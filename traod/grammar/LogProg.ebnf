@@ -21,140 +21,126 @@ directive
 
 statement
     =
-        CONS
+        cons
         [body:body]
-        DOT
+        dot
     |
         head:head
-        [CONS [body:body]]
-        DOT
+        [cons [body:body]]
+        dot
     |
-        WCONS
+        wcons
         [body:body]
-        DOT
-        SQUARE_OPEN
+        dot
+        square_open
         weight_at_level:weight_at_level
-        SQUARE_CLOSE
+        square_close
     |
-        optimize:optimize DOT
+        optimize:optimize dot
     ;
 
 
 head
     =
-      disjunction:(classical_literal {OR classical_literal}+)
-    | ordered_disjunction:(classical_literal {OOR classical_literal}+)
+      disjunction:(classical_literal {or classical_literal}+)
+    | ordered_disjunction:(classical_literal {oor classical_literal}+)
     | choice:choice
-    | choice:aggregate
+    | aggregate:aggregate
     | atom:classical_literal
     ;
 
 
 body
     =
-    (naf_literal | [NAF] aggregate) {COMMA (naf_literal | [NAF] aggregate)}
+    (naf_literal | [naf] aggregate) {comma (naf_literal | [naf] aggregate)}
     ;
 
 
 choice
     =
-    [term [binop]] CURLY_OPEN [choice_elements] CURLY_CLOSE [[binop] term]
-    ;
-
-
-choice_elements
-    =
-    [choice_elements SEMICOLON] choice_element
+    [term [binop]]
+    curly_open
+    [choice_element {semicolon choice_element}]
+    curly_close
+    [[binop] term]
     ;
 
 
 choice_element
     =
-    classical_literal [COLON [naf_literals]]
+    classical_literal [colon [naf_literals]]
     ;
 
 
 aggregate
     =
-    [term binop]
-    aggregate_function
-    CURLY_OPEN
-    [aggregate_elements]
-    CURLY_CLOSE
-    [binop term]
-    ;
-
-
-aggregate_elements
-    =
-    [aggregate_elements SEMICOLON] aggregate_element
+    [term [binop]]
+    [aggregate_function]
+    curly_open
+    [aggregate_element {semicolon aggregate_element}]
+    curly_close
+    [[binop] term]
     ;
 
 
 aggregate_element
     =
-    [terms] [COLON [naf_literals [COLON [naf_literals]]]]
+    [terms] [colon [naf_literals [colon [naf_literals]]]]
     ;
 
 
 aggregate_function
     =
-      AGGREGATE_COUNT
-    | AGGREGATE_MAX
-    | AGGREGATE_MIN
-    | AGGREGATE_SUMPLUS
-    | AGGREGATE_SUM
+      aggregate_count
+    | aggregate_max
+    | aggregate_min
+    | aggregate_sumplus
+    | aggregate_sum
     ;
 
 
 optimize
     =
     optimize_function
-    CURLY_OPEN
-    [optimize_elements]
-    CURLY_CLOSE
-    ;
-
-
-optimize_elements
-    =
-    [optimize_elements SEMICOLON] optimize_element
+    curly_open
+    [optimize_element {semicolon optimize_element}]
+    curly_close
     ;
 
 
 optimize_element
     =
-    weight_at_level [COLON [naf_literals]]
+    weight_at_level [colon [naf_literals]]
     ;
 
 
 optimize_function
     =
-    MAXIMIZE | MINIMIZE
+    maximize | minimize
     ;
 
 
 weight_at_level
     =
-    term [AT term] [COMMA terms]
+    term [at term] [comma terms]
     ;
 
 
 naf_literals
     =
-    [naf_literals COMMA] naf_literal
+    naf_literal {comma naf_literal}
     ;
 
 
 naf_literal
     =
-    [NAF] classical_literal | builtin_atom
+    [naf] classical_literal | builtin_atom
     ;
 
 
 classical_literal
     =
-    [MINUS] ID [PAREN_OPEN [terms] PAREN_CLOSE]
+    [minus] id [paren_open [terms] paren_close]
     ;
 
 
@@ -166,270 +152,270 @@ builtin_atom
 
 binop
     =
-    EQUAL | UNEQUAL | LESS_OR_EQ | GREATER_OR_EQ | LESS | GREATER
+    equal | unequal | less_or_eq | greater_or_eq | less | greater
     ;
 
 
 terms
     =
-    [terms COMMA] term
+    term {comma term}
     ;
 
 
 term
     =
-      ID [PAREN_OPEN [terms] PAREN_CLOSE]
-    | NUMBER
-    | STRING
-    | VARIABLE
-    | ANONYMOUS_VARIABLE
-    | PAREN_OPEN term PAREN_CLOSE
-    | MINUS term
+      id [paren_open [terms] paren_close]
+    | number
+    | string
+    | variable
+    | anonymous_variable
+    | paren_open term paren_close
+    | minus term
     | term arithop term
     ;
 
 
 arithop
     =
-    PLUS | MINUS | TIMES | DIV
+    plus | minus | times | div
     ;
 
 
-ID
+id
     =
     /[a-z_][A-Za-z0-9_]*/
     ;
 
 
-VARIABLE
+variable
     =
     /[A-Z][A-Za-z0-9_]*/
     ;
 
 
-SYMBOLIC_CONSTANT
+symbolic_constant
     =
     /[a-z][A-Za-z0-9_]*/
     ;
 
 
-STRING
+string
     =
     /"(?:\\.|[^|*\\()])+"/
     ;
 
 
-NUMBER
+number
     =
     /(0|[1-9][0-9]*)/
     ;
 
 
-ANONYMOUS_VARIABLE
+anonymous_variable
     =
     '_'
     ;
 
 
-DOT
+dot
     =
     '.'
     ;
 
 
-COMMA
+comma
     =
     ','
     ;
 
 
-QUERY_MARK
+query_mark
     =
     '?'
     ;
 
 
-COLON
+colon
     =
     ':'
     ;
 
 
-SEMICOLON
+semicolon
     =
     ';'
     ;
 
 
-OR
+or
     =
     '|' | ';'
     ;
 
 
-OOR
+oor
     =
     ';;' | '||'
     ;
 
 
-NAF
+naf
     =
     'not '
     ;
 
 
-CONS
+cons
     =
     ':-'
     ;
 
 
-WCONS
+wcons
     =
     ':~'
     ;
 
 
-PLUS
+plus
     =
     '+'
     ;
 
 
-MINUS
+minus
     =
     '-'
     ;
 
 
-TIMES
+times
     =
     '*'
     ;
 
 
-DIV
+div
     =
     '/'
     ;
 
 
-AT
+at
     =
     '@'
     ;
 
 
-PAREN_OPEN
+paren_open
     =
     '('
     ;
 
 
-PAREN_CLOSE
+paren_close
     =
     ')'
     ;
 
 
-SQUARE_OPEN
+square_open
     =
     '['
     ;
 
 
-SQUARE_CLOSE
+square_close
     =
     ']'
     ;
 
 
-CURLY_OPEN
+curly_open
     =
     '{'
     ;
 
 
-CURLY_CLOSE
+curly_close
     =
     '}'
     ;
 
 
-EQUAL
+equal
     =
     '='
     ;
 
 
-UNEQUAL
+unequal
     =
     '<>' | '!='
     ;
 
 
-LESS
+less
     =
     '<'
     ;
 
 
-GREATER
+greater
     =
     '>'
     ;
 
 
-LESS_OR_EQ
+less_or_eq
     =
     '<='
     ;
 
 
-GREATER_OR_EQ
+greater_or_eq
     =
     '>='
     ;
 
 
-AGGREGATE_COUNT
+aggregate_count
     =
     '#count'
     ;
 
 
-AGGREGATE_MAX
+aggregate_max
     =
     '#max'
     ;
 
 
-AGGREGATE_MIN
+aggregate_min
     =
     '#min'
     ;
 
 
-AGGREGATE_SUMPLUS
+aggregate_sumplus
     =
     '#sum+'
     ;
 
 
-AGGREGATE_SUM
+aggregate_sum
     =
     '#sum'
     ;
 
 
-MINIMIZE
+minimize
     =
     '#minimize' | '#minimise'
     ;
 
 
-MAXIMIZE
+maximize
     =
     '#maximize' | '#maximise'
     ;
