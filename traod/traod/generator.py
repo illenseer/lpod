@@ -35,17 +35,7 @@ def generate_split(ast, backend, strategy):
                 deg_count = 0
                 ods = ''.join(statement.head.ordered_disjunction).split(';;')
                 choice = ''
-                sat_choice = ''
                 ld_el = ''
-
-                if backend == 'asprin':
-                    ar = 'od_body({nr}){body}.'.format(
-                        nr=od_count,
-                        body=':-' + body if statement.body else ''
-                    )
-                    additional_rules.append(ar)
-                    ar = 'od_atoms({nr},1):-not od_body({nr}).'.format(nr=od_count)
-                    additional_rules.append(ar)
 
                 for od in ods:
                     deg_count += 1
@@ -57,9 +47,7 @@ def generate_split(ast, backend, strategy):
                     )
                     if deg_count != 1:
                         choice += ';'
-                        sat_choice += ','
                     choice += choice_el
-                    sat_choice += 'not {ch}'.format(ch=choice_el)
                     ar = '{od}:-{ch}{ld}{body}'.format(
                         od=od,
                         ch=choice_el,
@@ -76,11 +64,14 @@ def generate_split(ast, backend, strategy):
                     additional_rules.append(arc)
                     ld_el += ',not {}'.format(od)
                 head = '{{{choice}}}=1'.format(choice=choice)
-                satisfied = 'satisfied({nr},1):-{sc}.'.format(
+
+                ar = 'od_body({nr}){body}.'.format(
                     nr=od_count,
-                    sc=sat_choice
+                    body=':-' + body if statement.body else ''
                 )
-                additional_rules.append(satisfied)
+                additional_rules.append(ar)
+                ar = 'satisfied({nr},1):-not od_body({nr}).'.format(nr=od_count)
+                additional_rules.append(ar)
             elif statement.head.atom:
                 head = ''.join(statement.head.atom)
             elif statement.head.choice:
