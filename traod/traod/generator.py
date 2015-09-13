@@ -205,8 +205,10 @@ def generate_asprin_preference_spec(strategy, od_count, deg_count):
     """
     stmts = []
 
-    stmts.append('rule(1..{}).'.format(od_count))
-    stmts.append('deg(1..{}).'.format(deg_count))
+    if strategy == 'pareto':
+        stmts.append('deg(1..{}).'.format(deg_count))
+    else:
+        stmts.append('rule(1..{}).'.format(od_count))
 
     pareto_per_rule_tmpl = (
         '#preference(od{nr},less(weight))'
