@@ -35,7 +35,7 @@ strategy(pareto) :- not strategy(O) : cxopt(O).
 bot :- equal(_).
 bot :- worse(_).
 
-% % require non-existence of dominating answer set
+% require non-existence of dominating answer set
 :- not bot.
 
 
@@ -119,7 +119,7 @@ worse(card) :- strategy(card),
 equal(card) :- strategy(card), count(D,0) : deg(D).
 
 
-% hide od_atoms(_,_), od_body(_), generator(_) and optimize(_)
+% hide od_atoms(_,_), od_body(_), satisfied(_,_) and optimize(_)
 hide(A,od_atoms(R,D)) :- show(A,od_atoms(R,D)).
 hide(A,od_body(R)) :- show(A,od_body(R)).
 hide(A,satisfied(R,D)) :- show(A,satisfied(R,D)).
