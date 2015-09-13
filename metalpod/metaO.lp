@@ -76,19 +76,6 @@ equal(pareto) :- strategy(pareto), equal(pareto,R) : rule(R).
 
 %%%%%%%%%% Inclusion-preferred
 
-% strategy for every degree
-strategy(incl,D) :- strategy(incl), deg(D).
-
-% verify dominance
-chain(D1,D2) :- strategy(incl,D1), strategy(incl,D2), D1 < D2,
-                #false : strategy(incl,D3), D1 < D3, D3 < D2.
-
-check(D2) :- strategy(incl,D2), #false : chain(D1,D2).
-check(D2) :- chain(D1,D2), check(D1), equal(incl,D1).
-
-worse(incl) :- check(D1), worse(incl,D1).
-equal(incl) :- check(D1), equal(incl,D1), #false : chain(D1,D2).
-
 % rule with degree
 rd(R,D) :- strategy(incl), show(_,satisfied(R,D)).
 
@@ -96,9 +83,12 @@ ndiff(R,D) :- strategy(incl), rd(R,D), invDegCounter(R,D).
 ndiff(R,D) :- strategy(incl), rd(R,D), not invDegCand(R,D).
 
 equal(incl,D) :- strategy(incl), deg(D), ndiff(R,D) : rd(R,D).
+equal(incl) :- strategy(incl), equal(incl,D) : deg(D).
+
 worse(incl,D) :- strategy(incl), rd(R,D),
                  invDegCounter(R,D), not invDegCand(R,D).
-
+worse(incl) :- strategy(incl), worse(incl,D1),
+               equal(incl,D2) : deg(D2), D2 < D1.
 
 %%%%%%%%%% Cardinality-preferred
 
