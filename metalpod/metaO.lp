@@ -68,10 +68,10 @@ invDegCounter(R,D) :- strategy(incl;card),
 
 %%%%%%%%%% Pareto-preferred
 
-worse(pareto) :- strategy(pareto), degCand(R,D1), degCounter(R,D2), D1 < D2.
-
 equal(pareto,R) :- strategy(pareto), degCand(R,D), degCounter(R,D).
 equal(pareto) :- strategy(pareto), equal(pareto,R) : rule(R).
+
+worse(pareto) :- strategy(pareto), degCand(R,D1), degCounter(R,D2), D1 < D2.
 
 
 %%%%%%%%%% Inclusion-preferred
@@ -102,11 +102,11 @@ count(D,1) :- strategy(card),
               #sum { -1,R1 : invDegCand(R1,D), rule(R1) ;
                       1,R2 : invDegCounter(R2,D), rule(R2) } >= 1.
 
+equal(card) :- strategy(card), count(D,0) : deg(D).
+
 worse(card) :- strategy(card),
                count(D1,1),
                count(D2,0) : D1 > D2, deg(D2).
-
-equal(card) :- strategy(card), count(D,0) : deg(D).
 
 
 % hide od_atoms(_,_), od_body(_), satisfied(_,_) and optimize(_)
