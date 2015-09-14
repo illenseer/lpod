@@ -205,59 +205,31 @@ def generate_asprin_preference_spec(strategy, od_count, deg_count):
     """
     stmts = []
 
-    if strategy == 'pareto':
-        stmts.append('deg(1..{}).'.format(deg_count))
-    else:
-        stmts.append('rule(1..{}).'.format(od_count))
-
-    pareto_per_rule_tmpl = (
-        '#preference(od{nr},less(weight))'
-        '{{D,{nr}::satisfied({nr},D):deg(D)}}.'
-    )
-    pareto_combine_tmpl = (
-        '#preference(all,pareto){{{rules}}}.\n'
-        '#optimize(all).'
-    )
-    incl_per_deg_tmpl = (
-        '#preference(od{nr},superset)'
-        '{{satisfied(R,{nr}):rule(R)}}.'
-    )
-    incl_card_combine_tmpl = (
-        '#preference(all,lexico){{{rules}}}.\n'
-        '#optimize(all).'
-    )
-    card_per_deg_tmpl = (
-        '#preference(od{nr},more(cardinality))'
-        '{{satisfied(R,{nr}):rule(R)}}.'
-    )
+    stmts.append('deg(1..{}).'.format(deg_count))
+    stmts.append('rule(1..{}).'.format(od_count))
 
     if strategy == 'pareto':
-        combine_names = ''
-        for od in range(1, od_count + 1):
-            stmts.append(pareto_per_rule_tmpl.format(nr=od))
-            if od > 1:
-                combine_names += ';'
-            combine_names += 'name(od{nr})'.format(nr=od)
-        stmts.append(pareto_combine_tmpl.format(rules=combine_names))
-
+        pref = (
+            '#preference(od(R),less(weight))'
+            '{D,R::satisfied(R,D):deg(D)}:rule(R).\n'
+            '#preference(all,pareto){name(od(R)):rule(R)}.\n'
+            '#optimize(all).'
+        )
     elif strategy == 'incl':
-        combine_names = ''
-        for deg in range(1, deg_count + 1):
-            inv_deg = deg_count - deg + 1
-            stmts.append(incl_per_deg_tmpl.format(nr=deg))
-            if deg > 1:
-                combine_names += ';'
-            combine_names += '{inv}::name(od{nr})'.format(inv=inv_deg, nr=deg)
-        stmts.append(incl_card_combine_tmpl.format(rules=combine_names))
-
+        pref = (
+            '#preference(od(D),superset)'
+            '{{satisfied(R,D):rule(R)}}:deg(D).\n'
+            '#preference(all,lexico){{O::name(od(D)):deg(D),O={md}-D}}.\n'
+            '#optimize(all).'
+        ).format(md=deg_count+1)
     elif strategy == 'card':
-        combine_names = ''
-        for deg in range(1, deg_count + 1):
-            inv_deg = deg_count - deg + 1
-            stmts.append(card_per_deg_tmpl.format(nr=deg))
-            if deg > 1:
-                combine_names += ';'
-            combine_names += '{inv}::name(od{nr})'.format(inv=inv_deg, nr=deg)
-        stmts.append(incl_card_combine_tmpl.format(rules=combine_names))
+        pref = (
+            '#preference(od(D),more(cardinality))'
+            '{{satisfied(R,D):rule(R)}}:deg(D).\n'
+            '#preference(all,lexico){{O::name(od(D)):deg(D),O={md}-D}}.\n'
+            '#optimize(all).'
+        ).format(md=deg_count+1)
+
+    stmts.append(pref)
 
     return stmts
