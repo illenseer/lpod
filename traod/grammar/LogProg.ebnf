@@ -165,6 +165,7 @@ terms
 term
     =
       id [paren_open [terms] paren_close]
+    | number dot dot number
     | number
     | string
     | variable

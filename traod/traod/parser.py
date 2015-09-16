@@ -366,6 +366,11 @@ class LogProgParser(Parser):
                     self._paren_close_()
             with self._option():
                 self._number_()
+                self._dot_()
+                self._dot_()
+                self._number_()
+            with self._option():
+                self._number_()
             with self._option():
                 self._string_()
             with self._option():
