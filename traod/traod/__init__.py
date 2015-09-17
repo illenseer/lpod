@@ -7,5 +7,5 @@ from __future__ import absolute_import, division, print_function
 
 
 __author__ = 'Nils Pascal Illenseer'
-__version__ = '0.3.0'
+__version__ = '1.0.0'
 __license__ = 'MIT'
