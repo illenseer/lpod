@@ -4,6 +4,8 @@
 them into logic programs, which can be handled by `metalpod` or
 [`asprin`](http://potassco.sourceforge.net/labs.html#asprin).
 
+`traod` requires *grounded* LPOD instances as input.
+
 ## Installation
 It is recommended to install traod into a virtualenv, e.g.:
 
@@ -17,6 +19,10 @@ Install `traod`:
 ## Usage
 
     traod [OPTIONS] FILENAME
+
+### Argument:
+`FILENAME` Path to a file with a grounded LPOD instance. For `-` input is read
+from pipe.
 
 ### Options:
 `-b, --backend [metalpod|asprin]`
